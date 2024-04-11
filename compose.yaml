@@ -1,0 +1,31 @@
+services:
+  media:
+    extends:
+      file: docker-compose-base.yaml
+      service: media
+    build:
+      context: .
+      dockerfile: devcontainer-dockerfile
+    ports:
+      - 8080:8080
+  media-minio:
+    extends:
+      file: docker-compose-base.yaml
+      service: media-minio
+    ports:
+      - "9000:9000"
+      - "9090:9090"
+  media-dapr:
+    extends:
+      file: docker-compose-base.yaml
+      service: media-dapr
+    volumes:
+      - "./.dapr/dapr-config-minimal.yaml:/config.yaml"
+      - "./.dapr/components:/components"
+  placement:
+    image: "daprio/dapr"
+    command: ["./placement", "-port", "50006"]
+    ports:
+      - 50006:50006
+volumes:
+  media-minio-data:

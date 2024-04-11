@@ -1,0 +1,4 @@
+services:
+
+volumes:
+  minio_data:
