@@ -16,6 +16,7 @@ use s3::{creds::Credentials, Bucket, BucketConfiguration, Region};
 use simple_logger::SimpleLogger;
 
 use log::info;
+use url::Url;
 
 use crate::{mutation::Mutation, query::Query};
 
@@ -34,6 +35,9 @@ struct Args {
     /// Generates GraphQL schema in `./schemas/media.graphql`.
     #[arg(long)]
     generate_schema: bool,
+    /// Domain to which pre-signed URLs should be rewritten.
+    #[arg(long)]
+    rewrite_domain: Url,
 }
 
 /// Connects to MinIO bucket if existent, otherwise creates bucket `media-data`.
@@ -77,7 +81,7 @@ async fn main() -> std::io::Result<()> {
         file.write_all(schema_sdl.as_bytes())?;
         info!("GraphQL schema: ./schemas/media.graphql was successfully generated!");
     } else {
-        start_service().await;
+        start_service(args.rewrite_domain).await;
     }
     Ok(())
 }
@@ -94,12 +98,13 @@ async fn graphql_handler(
 }
 
 /// Starts media service on port 8000.
-async fn start_service() {
+async fn start_service(rewrite_domain: Url) {
     let media_data_bucket = initialize_minio_media_data_bucket().await;
 
     let schema = Schema::build(Query, Mutation, EmptySubscription)
         .extension(Logger)
         .data(media_data_bucket)
+        .data(rewrite_domain)
         .enable_federation()
         .finish();
 

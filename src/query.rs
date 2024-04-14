@@ -1,6 +1,7 @@
 use async_graphql::{Context, Error, Object, Result};
 use bson::Uuid;
 use s3::Bucket;
+use url::Url;
 
 pub static URL_EXPIRATION_TIME: u32 = 86400;
 
@@ -24,6 +25,17 @@ impl Query {
             .key;
         let media_file_url =
             media_data_bucket.presign_get(media_file_path, URL_EXPIRATION_TIME, None)?;
-        Ok(media_file_url)
+        let adapted_media_file_url = adapt_url_to_rewrite_domain(media_file_url, &ctx)?;
+        Ok(adapted_media_file_url)
     }
+}
+
+fn adapt_url_to_rewrite_domain<'a>(url: String, ctx: &Context<'a>) -> Result<String> {
+    let mut rewrite_domain = ctx.data::<Url>()?.clone();
+    let parsed_url = Url::parse(&url)?;
+    let parsed_url_path = parsed_url.path();
+    let parsed_query = parsed_url.query();
+    rewrite_domain.set_path(parsed_url_path);
+    rewrite_domain.set_query(parsed_query);
+    Ok(rewrite_domain.to_string())
 }
