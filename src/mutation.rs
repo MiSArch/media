@@ -4,7 +4,7 @@ use s3::Bucket;
 use tokio::fs::File;
 use tokio::io::AsyncReadExt;
 
-/// Describes GraphQL order mutations.
+/// Describes GraphQL media mutations.
 pub struct Mutation;
 
 #[Object]
