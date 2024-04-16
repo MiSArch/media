@@ -41,7 +41,7 @@ struct Args {
 }
 
 /// Connects to MinIO bucket if existent, otherwise creates bucket `media-data`.
-/// TODO: Change credentials before production use.
+/// Warning: Change credentials before production use.
 async fn initialize_minio_media_data_bucket() -> Bucket {
     let bucket_name = "media-data";
     let region = Region::Custom {
