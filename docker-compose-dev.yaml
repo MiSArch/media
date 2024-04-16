@@ -1,4 +1,10 @@
 services:
+  nginx:
+    extends:
+      file: docker-compose-base.yaml
+      service: nginx
+    ports:
+      - 7000:80
   media:
     extends:
       file: docker-compose-base.yaml
@@ -6,6 +12,7 @@ services:
     build:
       context: .
       dockerfile: dev-dockerfile
+    command: ["--", "--rewrite-domain", "http://localhost:7000"]
     ports:
       - 8080:8080
   media-minio:

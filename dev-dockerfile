@@ -5,4 +5,4 @@ RUN apt update && apt install -y pkg-config libssl-dev && rm -rf /var/lib/apt/li
 WORKDIR /usr/src/misarch-media
 
 COPY . .
-CMD ["cargo", "run"]
+ENTRYPOINT ["cargo", "run"]
