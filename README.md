@@ -1,6 +1,6 @@
 # Media service for MiSArch
 
-*Important: Set proper MinIO credentials before using the service.*
+_Important: Set proper MinIO credentials before using the service._
 
 ### Quickstart (DevContainer)
 
@@ -13,6 +13,13 @@
 
 ### What it can do
 
-1. Listens to the `discount/order/validation-succeeded` event
-2. Creates `Media` and saves it in MongoDB
-3. Emits `media/media/created` event
+1. Serves static files to any domain with Nginx
+2. Features file uploads via GraphQL
+3. Generates pre-signed URLs for files at a GraphQL endpoint
+4. Allows configuration of the pre-signed URL domain
+
+### How to configure the MinIO pre-signed URL domain
+
+The domain can be configured with `command: ["--rewrite-domain", "http://localhost:7000"]` when using the `docker-compose-base.yaml` file.
+
+The domain can be configured with `command: ["--", "--rewrite-domain", "http://localhost:7000"]` when using the `docker-compose-dev.yaml` file.
