@@ -20,7 +20,7 @@ jobs:
           path: "schemas"
       - name: Save graphql schemas
         run: |
-          cargo run -- --generate-schema
+          cargo run -- --generate-schema --rewrite-domain http://localhost:7000
       - uses: misarch/graphql-schema-transform@v1
         with:
           schema: schemas/media.graphql
