@@ -7,6 +7,7 @@ use async_graphql_axum::{GraphQLRequest, GraphQLResponse};
 
 use axum::{
     extract::State,
+    http::StatusCode,
     response::{self, IntoResponse},
     routing::get,
     Router, Server,
@@ -110,6 +111,7 @@ async fn start_service(rewrite_domain: Url) {
 
     let app = Router::new()
         .route("/", get(graphiql).post(graphql_handler))
+        .route("/health", get(StatusCode::OK))
         .with_state(schema);
 
     info!("GraphiQL IDE: http://0.0.0.0:8080");
