@@ -51,19 +51,16 @@ async fn initialize_minio_media_data_bucket() -> Bucket {
     };
     let credentials = Credentials::new(Some("admin"), Some("password"), None, None, None).unwrap();
 
-    match Bucket::new(bucket_name, region.clone(), credentials.clone()) {
-        Ok(bucket) => bucket.with_path_style(),
-        Err(_) => {
-            Bucket::create_with_path_style(
-                bucket_name,
-                region,
-                credentials,
-                BucketConfiguration::default(),
-            )
-            .await
-            .unwrap()
-            .bucket
-        }
+    match Bucket::create_with_path_style(
+        bucket_name,
+        region.clone(),
+        credentials.clone(),
+        BucketConfiguration::default(),
+    )
+    .await
+    {
+        Ok(bucket_response) => bucket_response.bucket,
+        Err(_) => Bucket::new(bucket_name, region, credentials).unwrap(),
     }
     .with_path_style()
 }

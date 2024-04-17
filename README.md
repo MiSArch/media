@@ -1,6 +1,6 @@
 # Media service for MiSArch
 
-_Important: Set proper MinIO credentials before using the service._
+_Important: Consider setting secure MinIO credentials for production use._
 
 ### Quickstart (DevContainer)
 
