@@ -5,6 +5,8 @@ services:
       service: nginx
     ports:
       - 7000:80
+    environment:
+      MINIO_URL: http://media-minio:9000
   media:
     extends:
       file: docker-compose-base.yaml
