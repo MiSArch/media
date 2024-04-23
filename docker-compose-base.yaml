@@ -1,5 +1,5 @@
 services:
-  nginx:
+  media-nginx:
     restart: unless-stopped
     build:
       context: nginx
