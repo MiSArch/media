@@ -5,9 +5,10 @@ use async_graphql::{
 };
 use async_graphql_axum::{GraphQLRequest, GraphQLResponse};
 
+use authentication::AuthorizedUserHeader;
 use axum::{
     extract::State,
-    http::StatusCode,
+    http::{HeaderMap, StatusCode},
     response::{self, IntoResponse},
     routing::get,
     Router, Server,
@@ -22,6 +23,11 @@ use crate::{mutation::Mutation, query::Query};
 
 mod mutation;
 mod query;
+
+mod media;
+mod media_connection;
+
+mod authentication;
 
 /// Builds the GraphiQL frontend.
 async fn graphiql() -> impl IntoResponse {
@@ -85,9 +91,13 @@ async fn main() -> std::io::Result<()> {
 /// Executes the GraphQL schema with the request.
 async fn graphql_handler(
     State(schema): State<Schema<Query, Mutation, EmptySubscription>>,
+    headers: HeaderMap,
     req: GraphQLRequest,
 ) -> GraphQLResponse {
-    let req = req.into_inner();
+    let mut req = req.into_inner();
+    if let Ok(authenticate_user_header) = AuthorizedUserHeader::try_from(&headers) {
+        req = req.data(authenticate_user_header);
+    }
     schema.execute(req).await.into()
 }
 
