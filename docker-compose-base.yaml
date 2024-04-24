@@ -1,16 +1,11 @@
 services:
-  media-nginx:
-    restart: unless-stopped
-    build:
-      context: nginx
-      dockerfile: nginx-dockerfile
   media:
     restart: unless-stopped
     build:
       context: .
       dockerfile: base-dockerfile
     healthcheck:
-      test: wget http://localhost:8080/graphiql || exit 1
+      test: wget -qO - http://localhost:8080/health || exit 1
       interval: 1s
       timeout: 10s
       retries: 20

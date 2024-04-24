@@ -5,6 +5,8 @@ use serde::Serialize;
 use tokio::fs::File;
 use tokio::io::AsyncReadExt;
 
+use crate::authentication::authenticate_user;
+
 /// Describes GraphQL media mutations.
 pub struct Mutation;
 
@@ -19,6 +21,7 @@ impl Mutation {
         ctx: &Context<'a>,
         #[graphql(desc = "Media file to upload.")] media_file: Upload,
     ) -> Result<Uuid> {
+        authenticate_user(&ctx, None)?;
         let media_data_bucket = ctx.data::<Bucket>()?;
         let media_file_value = media_file.value(&ctx)?;
         let missing_content_type_error = Error::new("Content type of file upload does not exist.");

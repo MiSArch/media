@@ -1,4 +1,4 @@
-use std::{fs::File, io::Write};
+use std::{env, fs::File, io::Write};
 
 use async_graphql::{
     extensions::Logger, http::GraphiQLSource, EmptySubscription, SDLExportOptions, Schema,
@@ -47,9 +47,10 @@ struct Args {
 /// Warning: Change credentials before production use.
 async fn initialize_minio_media_data_bucket() -> Bucket {
     let bucket_name = "media-data";
+    let endpoint = env::var("MINIO_ENDPOINT").unwrap();
     let region = Region::Custom {
         region: "eu-central-1".to_string(),
-        endpoint: "http://media-minio:9000".to_string(),
+        endpoint,
     };
     let credentials = Credentials::new(Some("admin"), Some("password"), None, None, None).unwrap();
 

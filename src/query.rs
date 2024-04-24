@@ -22,10 +22,8 @@ impl Query {
         Ok(media)
     }
 
-    /// Returns pre-signed paths for a medias of UUIDs.
-    ///
-    /// Uses `self.get_media_path` to compute multiple media paths.
-    async fn get_media_ids<'a>(
+    /// Returns all medias of the service.
+    async fn get_medias<'a>(
         &self,
         ctx: &Context<'a>,
         #[graphql(desc = "Describes that the `first` N medias should be retrieved.")] first: Option<
