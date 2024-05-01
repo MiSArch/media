@@ -31,7 +31,7 @@ services:
         "--app-id",
         "media",
         "--app-port",
-        "8080",
+        "${EXPERIMENT_CONFIG_SIDECAR_PORT:-8080}",
         "--app-protocol",
         "http",
         "--dapr-http-port",
