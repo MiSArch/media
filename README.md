@@ -9,7 +9,7 @@ _Important: Consider setting secure MinIO credentials for production use._
 
 ### Quickstart (Docker Compose)
 
-1. `docker compose -f docker-compose-dev.yaml up --build` in the repository root directory. **IMPORTANT:** MongoDB credentials should be configured for production.
+1. `docker compose -f docker-compose-dev.yaml up --build` in the repository root directory. **IMPORTANT:** MinIO credentials should be configured for production.
 
 ### What it can do
 
@@ -20,6 +20,10 @@ _Important: Consider setting secure MinIO credentials for production use._
 
 ### How to configure the MinIO pre-signed URL domain
 
-The domain can be configured with `command: ["--rewrite-domain", "http://localhost:7000"]` when using the `docker-compose-base.yaml` file.
+The media services uses a Nginx reverse proxy to make the fixed domain of MinIO pre-signed URLs configurable through environment variables.
 
-The domain can be configured with `command: ["--", "--rewrite-domain", "http://localhost:7000"]` when using the `docker-compose-dev.yaml` file.
+The service parses the following environment variables:
+
+- `MINIO_ENDPOINT`: configurable domain of the MinIO instance.
+- `PATH_EXPIRATION_TIME`: validity duration of MinIO pre-signed URLs in seconds.
+- `PROXY_PATH`: path to include in the pre-signed URLs
