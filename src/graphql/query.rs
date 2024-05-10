@@ -2,7 +2,9 @@ use async_graphql::{Context, Error, Object, Result};
 use bson::Uuid;
 use s3::Bucket;
 
-use crate::{authentication::authenticate_user, media::Media, media_connection::MediaConnection};
+use crate::authorization::authorize_user;
+
+use super::model::{connection::media_connection::MediaConnection, media::Media};
 
 /// Describes GraphQL invoice queries.
 pub struct Query;
@@ -32,7 +34,7 @@ impl Query {
         #[graphql(desc = "Describes how many medias should be skipped at the beginning.")]
         skip: Option<usize>,
     ) -> Result<MediaConnection> {
-        authenticate_user(&ctx, None)?;
+        authorize_user(&ctx, None)?;
         let media_data_bucket = ctx.data::<Bucket>()?;
         let mut list_bucket_results = media_data_bucket.list("".to_string(), None).await?;
         let list_bucket_result = list_bucket_results

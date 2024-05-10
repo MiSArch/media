@@ -1,8 +1,8 @@
 use async_graphql::SimpleObject;
 
-use crate::media::Media;
+use super::super::media::Media;
 
-/// A connection of Medias.
+/// A connection of medias.
 #[derive(SimpleObject)]
 #[graphql(shareable)]
 pub struct MediaConnection {
