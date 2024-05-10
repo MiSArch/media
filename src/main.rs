@@ -19,6 +19,7 @@ use s3::{creds::Credentials, Bucket, BucketConfiguration, Region};
 use log::{info, Level};
 
 mod authorization;
+mod event;
 mod graphql;
 use crate::graphql::{mutation::Mutation, query::Query};
 

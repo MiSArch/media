@@ -1,11 +1,11 @@
 use async_graphql::{Context, Error, Object, Result, Upload};
 use bson::Uuid;
 use s3::Bucket;
-use serde::Serialize;
 use tokio::fs::File;
 use tokio::io::AsyncReadExt;
 
 use crate::authorization::authorize_user;
+use crate::event::model::media_dto::MediaDTO;
 
 /// Describes GraphQL media mutations.
 pub struct Mutation;
@@ -44,12 +44,6 @@ impl Mutation {
             _ => Err(Error::new("Media file could not be inserted into MinIO.")),
         }
     }
-}
-
-/// DTO of a media.
-#[derive(Debug, Serialize)]
-pub struct MediaDTO {
-    id: Uuid,
 }
 
 /// Sends an `media/media/created` created event containing the media UUID.
