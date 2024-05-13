@@ -5,7 +5,7 @@ use async_graphql::{
 };
 use async_graphql_axum::{GraphQLRequest, GraphQLResponse};
 
-use authentication::AuthorizedUserHeader;
+use authorization::AuthorizedUserHeader;
 use axum::{
     extract::State,
     http::{HeaderMap, StatusCode},
@@ -15,19 +15,13 @@ use axum::{
 };
 use clap::{arg, command, Parser};
 use s3::{creds::Credentials, Bucket, BucketConfiguration, Region};
-use simple_logger::SimpleLogger;
 
-use log::info;
+use log::{info, Level};
 
-use crate::{mutation::Mutation, query::Query};
-
-mod mutation;
-mod query;
-
-mod media;
-mod media_connection;
-
-mod authentication;
+mod authorization;
+mod event;
+mod graphql;
+use crate::graphql::{mutation::Mutation, query::Query};
 
 /// Builds the GraphiQL frontend.
 async fn graphiql() -> impl IntoResponse {
@@ -71,7 +65,7 @@ async fn initialize_minio_media_data_bucket() -> Bucket {
 /// Activates logger and parses argument for optional schema generation. Otherwise starts gRPC and GraphQL server.
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
-    SimpleLogger::new().init().unwrap();
+    simple_logger::init_with_level(Level::Warn).unwrap();
 
     let args = Args::parse();
     if args.generate_schema {
@@ -89,7 +83,12 @@ async fn main() -> std::io::Result<()> {
 
 /// Describes the handler for GraphQL requests.
 ///
-/// Executes the GraphQL schema with the request.
+/// Parses the `Authorized-User` header and writes it in the context data of the specfic request.
+/// Then executes the GraphQL schema with the request.
+///
+/// * `schema` - GraphQL schema used by handler.
+/// * `headers` - Header map containing headers of request.
+/// * `request` - GraphQL request.
 async fn graphql_handler(
     State(schema): State<Schema<Query, Mutation, EmptySubscription>>,
     headers: HeaderMap,
