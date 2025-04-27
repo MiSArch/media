@@ -11,12 +11,21 @@ use axum::{
     http::{HeaderMap, StatusCode},
     response::{self, IntoResponse},
     routing::get,
-    Router, Server,
+    Router,
 };
 use clap::{arg, command, Parser};
 use s3::{creds::Credentials, Bucket, BucketConfiguration, Region};
 
 use log::{info, Level};
+
+use once_cell::sync::Lazy;
+use axum_otel_metrics::HttpMetricsLayerBuilder;
+use axum_otel_metrics::HttpMetricsLayer;
+
+use opentelemetry::global;
+use opentelemetry_sdk::metrics::{PeriodicReader, SdkMeterProvider, Temporality};
+use opentelemetry_sdk::Resource;
+use opentelemetry_otlp::WithExportConfig;
 
 mod authorization;
 mod event;
@@ -101,6 +110,37 @@ async fn graphql_handler(
     schema.execute(req).await.into()
 }
 
+static RESOURCE: Lazy<Resource> = Lazy::new(|| {
+    Resource::builder()
+        .with_service_name("media")
+        .build()
+});
+
+/// Initializes OpenTelemetry metrics exporter and sets the global meter provider.
+fn init_otlp() -> HttpMetricsLayer {
+    let exporter = opentelemetry_otlp::MetricExporter::builder()
+        .with_http()
+        .with_endpoint("http://otel-collector:4318/v1/metrics")
+        .with_temporality(Temporality::default())
+        .build()
+        .unwrap();
+
+    let reader = PeriodicReader::builder(exporter)
+        .with_interval(std::time::Duration::from_secs(5))
+        .build();
+
+    let provider = SdkMeterProvider::builder()
+        .with_reader(reader)
+        .with_resource(RESOURCE.clone())
+        .build();
+
+    global::set_meter_provider(provider.clone());
+
+    HttpMetricsLayerBuilder::new()
+        .with_provider(provider.clone())
+        .build()
+}
+
 /// Starts media service on port 8000.
 async fn start_service() {
     let media_data_bucket = initialize_minio_media_data_bucket().await;
@@ -111,14 +151,18 @@ async fn start_service() {
         .enable_federation()
         .finish();
 
+    let metrics = init_otlp();
+
     let app = Router::new()
         .route("/", get(graphiql).post(graphql_handler))
         .route("/health", get(StatusCode::OK))
-        .with_state(schema);
+        .with_state(schema)
+        .layer(metrics);
 
     info!("GraphiQL IDE: http://0.0.0.0:8080");
-    Server::bind(&"0.0.0.0:8080".parse().unwrap())
-        .serve(app.into_make_service())
+
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:8080").await.unwrap();
+    axum::serve(listener, app)
         .await
         .unwrap();
 }
