@@ -14,6 +14,7 @@ services:
       - media-minio
     environment:
       MONGODB_URI: mongodb://media-db:27017
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector:4318"
   media-minio:
     image: minio/minio
     environment:
